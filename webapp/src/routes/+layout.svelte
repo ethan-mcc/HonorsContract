@@ -13,7 +13,7 @@
 </script>
 
 <svelte:head>
-	<title>{$page.data.title || 'SvelteKit + TypeScript + TailwindCSS starter'}</title>
+	<title>{$page.data.title || 'Honors Contract'}</title>
 	<HeadHrefLangs />
 </svelte:head>
 
