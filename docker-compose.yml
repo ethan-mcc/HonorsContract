@@ -1,0 +1,49 @@
+version:  "3"
+
+services:
+  sql:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    cap_add: [ 'SYS_PTRACE' ]
+    environment:
+      - "ACCEPT_EULA=1"
+      - "MSSQL_SA_PASSWORD=U@e9nJJ8fkG4"
+    ports:
+      - "1434:1434"
+    hostname: sql
+    volumes:
+      - "mssql-azuresql-edge-data:/var/opt/sql"
+    networks: 
+      - "my_network"
+  sqlpad:
+    image: sqlpad/sqlpad:latest
+    environment:
+      - "SQLPAD_ADMIN=admin@admin.org"
+      - "SQLPAD_ADMIN_PASSWORD=U@e9nJJ8fkG4"
+      - "SQLPAD_AUTH_DISABLED=True"
+      - "SQLPAD_AUTH_DISABLED_DEFAULT_ROLE=admin"
+    links:
+      - sql
+    ports:
+      - "5001:3000"
+    volumes:
+      - sqlpad-volume:/var/lib/sqlpad
+    networks: 
+      - "my_network"
+  sveltekit:
+    image: mjyocca/sveltekit-nomad:latest
+    restart: unless-stopped
+    volumes:
+      - sveltekit_data:/usr/src/app
+    networks:
+      - my_network
+    ports:
+      - 3000
+volumes:
+    sveltekit_data:
+      driver: local
+    mssql-azuresql-edge-data:
+    sqlpad-volume:
+
+networks:
+  my_network:
+    driver: bridge
