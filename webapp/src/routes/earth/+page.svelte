@@ -1,66 +1,60 @@
-<head>
-  <style> body { margin: 0; } </style>
+<script>
+    import Globe from 'globe.gl';
 
-  <script src="//unpkg.com/three"></script>
-  <script src="//unpkg.com/three-globe"></script>
-  <!--<script src="../../dist/three-globe.js"></script>-->
+    import {scaleLinear} from "d3-scale";
+    import {onMount} from "svelte";
+    import {page} from "$app/stores";
+    import * as d3 from "d3-scale";
+
+    export let data
+    console.log(data.test)
+
+
+    onMount(async () => {
+
+        const weightColor = d3.scaleLinear()
+            .domain([0, 30])
+            .range(['lightblue', 'darkred'])
+            .clamp(true);
+
+        const myGlobe = Globe()
+            .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+            .hexBinPointLat(d => d.items_latitude)
+            .hexBinPointLng(d => d.items_longitude)
+            //.hexBinPointWeight(d => d.properties.mag)
+            .hexAltitude(({ sumWeight }) => sumWeight * 0.0035)
+            .hexTopColor(d => weightColor(d.sumWeight))
+            .hexSideColor(d => weightColor(d.sumWeight))
+            .hexLabel(d => `
+        <b>${d.points.length}</b> earthquakes in the past month:<ul><li>
+          ${d.points.slice().sort((a, b) => b.items_vei - a.items_vei).map(d => d.items_name).join('</li><li>')}
+        </li></ul>
+      `)
+            (document.getElementById('globeViz'));
+
+        //console.log(data.test.recordset)
+
+        fetch('//earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson').then(res => res.json()).then(equakes => {
+            console.log(equakes.features[0].sumWeight)
+        });
+
+        myGlobe.hexBinPointsData(data.test);
+
+
+
+        //console.log(data.test.recordset[0].items_latitude)
+
+
+    });
+
+</script>
+<head>
+    <style> body { margin: 0; } </style>
+
+
+    <!--<script src="../../dist/globe.gl.js"></script>-->
 </head>
 
 <body>
 <div id="globeViz"></div>
-
-<script type="importmap">{ "imports": { "three": "https://unpkg.com/three/build/three.module.js" }}</script>
-<script type="module">
-  import { TrackballControls } from '//unpkg.com/three/examples/jsm/controls/TrackballControls.js';
-  Object.assign(THREE , { TrackballControls });
-
-  // Gen random data
-  const N = 50;
-  const gData = [...Array(N).keys()].map(() => ({
-    lat: (Math.random() - 0.5) * 180,
-    lng: (Math.random() - 0.5) * 360,
-    size: Math.random() * 1,
-    color: ['red', 'white', 'blue', 'green'][Math.round(Math.random() * 3)]
-  }));
-
-  const Globe = new ThreeGlobe()
-    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
-    .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-    .labelsData(gData)
-    .labelText(d => `(${Math.round(d.lat * 1e2) / 1e2}, ${Math.round(d.lng * 1e2) / 1e2})`)
-    .labelSize('size')
-    .labelDotRadius(d => d.size / 5)
-    .labelColor('color');
-
-  // Setup renderer
-  const renderer = new THREE.WebGLRenderer();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.getElementById('globeViz').appendChild(renderer.domElement);
-
-  // Setup scene
-  const scene = new THREE.Scene();
-  scene.add(Globe);
-  scene.add(new THREE.AmbientLight(0xbbbbbb));
-  scene.add(new THREE.DirectionalLight(0xffffff, 0.6));
-
-  // Setup camera
-  const camera = new THREE.PerspectiveCamera();
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  camera.position.z = 500;
-
-  // Add camera controls
-  const tbControls = new THREE.TrackballControls(camera, renderer.domElement);
-  tbControls.minDistance = 101;
-  tbControls.rotateSpeed = 5;
-  tbControls.zoomSpeed = 0.8;
-
-  // Kick-off renderer
-  (function animate() { // IIFE
-    // Frame cycle
-    tbControls.update();
-    renderer.render(scene, camera);
-    requestAnimationFrame(animate);
-  })();
-</script>
 </body>
