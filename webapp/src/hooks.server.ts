@@ -9,10 +9,7 @@ loadAllLocales();
 const L = i18n();
 
 const handleDatabase = (async ({ event, resolve })  => {
-	const dbconn = connectToDB();
-	event.locals = { dbconn };
-	const response = await resolve(event);
-	return await resolve(event);
+
 }) satisfies Handle;
 
 const handleLocale = (async ({ event, resolve }) => {
@@ -78,4 +75,4 @@ const getPreferredLocale = ({ request }: RequestEvent) => {
 	return detectLocale(acceptLanguageDetector);
 };
 
-export const handle: Handle = sequence(handleLocale, handleTheme, handleDatabase);
+export const handle: Handle = sequence(handleLocale, handleTheme);

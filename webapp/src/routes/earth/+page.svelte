@@ -10,6 +10,17 @@
     console.log(data.test)
 
 
+    async function getV() {
+
+        const response = await fetch('/api/v', {
+            method: 'GET'
+        });
+        if (response.ok) {
+            return response.text()
+        }
+    }
+
+
     onMount(async () => {
 
         const weightColor = d3.scaleLinear()
@@ -34,11 +45,7 @@
 
         //console.log(data.test.recordset)
 
-        fetch('//earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson').then(res => res.json()).then(equakes => {
-            console.log(equakes.features[0].sumWeight)
-        });
-
-        myGlobe.hexBinPointsData(data.test);
+        myGlobe.hexBinPointsData(JSON.parse(await getV()));
 
 
 
