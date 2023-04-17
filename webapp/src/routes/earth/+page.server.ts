@@ -5,6 +5,7 @@ export const ssr = false;
 import type { PageServerLoad } from './$types';
 
 import sql from 'mssql';
+import {locales} from "../../i18n/i18n-util";
 
 export const load = (async ({ params }) => {
     let result;
@@ -27,6 +28,7 @@ export const load = (async ({ params }) => {
             }
         }
         await sql.connect(sqlConfig)
+
         result = await sql.query`select 
 items_name, items_location, items_country, items_latitude, items_longitude, items_elevation, items_morphology, items_vei 
 from dbo.volcanoes`

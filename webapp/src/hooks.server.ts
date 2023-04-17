@@ -3,11 +3,21 @@ import { detectLocale, i18n, isLocale } from '$i18n/i18n-util';
 import { loadAllLocales } from '$i18n/i18n-util.sync';
 import type { Handle, RequestEvent } from '@sveltejs/kit';
 import { initAcceptLanguageHeaderDetector } from 'typesafe-i18n/detectors';
+import {connectToDB} from "./lib/utils/db";
 
 loadAllLocales();
 const L = i18n();
 
+const handleDatabase = (async ({ event, resolve })  => {
+	const dbconn = connectToDB();
+	event.locals = { dbconn };
+	const response = await resolve(event);
+	return await resolve(event);
+}) satisfies Handle;
+
 const handleLocale = (async ({ event, resolve }) => {
+
+
 	// read language slug
 	const [, lang] = event.url.pathname.split('/');
 
@@ -36,6 +46,7 @@ const handleLocale = (async ({ event, resolve }) => {
 }) satisfies Handle;
 
 const handleTheme = (async ({ event, resolve }) => {
+
 	let theme: string | null = null;
 
 	const newTheme = event.url.searchParams.get('theme');
@@ -67,4 +78,4 @@ const getPreferredLocale = ({ request }: RequestEvent) => {
 	return detectLocale(acceptLanguageDetector);
 };
 
-export const handle: Handle = sequence(handleLocale, handleTheme);
+export const handle: Handle = sequence(handleLocale, handleTheme, handleDatabase);
