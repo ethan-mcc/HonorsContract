@@ -30,6 +30,25 @@
         }
     }
 
+    async function postV(event) {
+        const data = new FormData(this);
+
+        const response = await fetch('/api/v', {
+            method: 'POST',
+            body: data
+        });
+        if (response.ok) {
+            console.log(response.text())
+            return response.text()
+
+        }
+    }
+
+    async function changeData(data) {
+        myGlobe.hexBinPointsData(JSON.parse(data));
+    }
+
+    let myGlobe;
 
     onMount(async () => {
 
@@ -38,22 +57,23 @@
             .range(['lightblue', 'darkred'])
             .clamp(true);
 
-        const myGlobe = Globe()
+        myGlobe = Globe()
             .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
             .hexBinPointLat(d => d.items_latitude)
             .hexBinPointLng(d => d.items_longitude)
             //.hexBinPointWeight(d => d.properties.mag)
-            .hexAltitude(({ sumWeight }) => sumWeight * 0.0035)
+            .hexAltitude(({ sumWeight }) => sumWeight * 0.005)
             .hexTopColor(d => weightColor(d.sumWeight))
             .hexSideColor(d => weightColor(d.sumWeight))
             .hexLabel(d => `
-        <b>${d.points.length}</b> earthquakes in the past month:<ul><li>
-          ${d.points.slice().sort((a, b) => b.items_vei - a.items_vei).map(d => d.items_name).join('</li><li>')}
+        <b>${d.points.slice().map(d=> d.items_location).at(0)}</b> ${d.points.length} events recorded<ul><li>
+          ${d.points.slice().sort((a, b) => b.items_year - a.items_vei).map(d => d.items_name + ' ' + d.items_year).join('</li><li>')}
         </li></ul>
       `)
             (document.getElementById('globeViz'));
 
         //console.log(data.test.recordset)
+
 
         myGlobe.hexBinPointsData(JSON.parse(await getV()));
 
@@ -63,6 +83,7 @@
 
 
     });
+
 
 </script>
 <head>
@@ -81,7 +102,7 @@
     </button>
 <!-- drawer component -->
 {#if searchBox}
-<form action="#" method="get" id="drawer-example"
+<form method="post" id="drawer-example" on:submit|preventDefault={async () => await changeData(postV())}
       class="fixed top-0 left-0 w-full h-screen max-w-xs p-4 overflow-y-auto transition-transform z-10 bg-white dark:bg-gray-800"
       tabindex="-1" aria-labelledby="drawer-label">
     <h5 id="drawer-label"
@@ -112,7 +133,7 @@
                     <div class="w-full">
 
 
-                        <input type="number" id="price-from" value="1000" min="1" max="2023"
+                        <input type="number" name="year-from" id="year-from" value="1000" min="1" max="2023"
                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                placeholder="" required>
                     </div>
@@ -120,7 +141,7 @@
                     <div class="w-full">
 
 
-                        <input type="number" id="max-experience-input" value="2023" min="1" max="2023"
+                        <input type="number" name="year-to" id="year-to" value="2023" min="1" max="2023"
                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                placeholder="" required>
                     </div>

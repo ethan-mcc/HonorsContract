@@ -11,3 +11,4 @@ import {connectToDB} from "../../lib/utils/db";
 export const load = (async ({ params }) => {
 
 }) satisfies PageServerLoad;
+
