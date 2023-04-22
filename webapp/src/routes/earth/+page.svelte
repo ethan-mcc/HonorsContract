@@ -36,16 +36,20 @@
         const response = await fetch('/api/v', {
             method: 'POST',
             body: data
-        });
-        if (response.ok) {
-            console.log(response.text())
-            return response.text()
+        }).then(response =>
+        response.json().then(data => ({
+            data: data,
+            status: response.status
+        }))
+            .then(res => {
+                console.log(res.status, res.data)
+                changeData(res.data)
+            }))
 
-        }
     }
 
     async function changeData(data) {
-        myGlobe.hexBinPointsData(JSON.parse(data));
+        myGlobe.hexBinPointsData(data);
     }
 
     let myGlobe;
@@ -58,6 +62,7 @@
             .clamp(true);
 
         myGlobe = Globe()
+            //images/earth.jpg
             .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
             .hexBinPointLat(d => d.items_latitude)
             .hexBinPointLng(d => d.items_longitude)
@@ -70,7 +75,6 @@
           ${d.points.slice().sort((a, b) => b.items_year - a.items_vei).map(d => d.items_name + ' ' + d.items_year).join('</li><li>')}
         </li></ul>
       `)
-            (document.getElementById('globeViz'));
 
         //console.log(data.test.recordset)
 
@@ -102,7 +106,7 @@
     </button>
 <!-- drawer component -->
 {#if searchBox}
-<form method="post" id="drawer-example" on:submit|preventDefault={async () => await changeData(postV())}
+<form method="post" id="drawer-example" on:submit|preventDefault={postV}
       class="fixed top-0 left-0 w-full h-screen max-w-xs p-4 overflow-y-auto transition-transform z-10 bg-white dark:bg-gray-800"
       tabindex="-1" aria-labelledby="drawer-label">
     <h5 id="drawer-label"
