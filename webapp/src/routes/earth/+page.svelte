@@ -1,6 +1,9 @@
 <script>
     import Globe from 'globe.gl';
 
+    import fast_earth from '$lib/assets/fast_earth.jpg'
+    import earth from '$lib/assets/earth.jpg'
+
     import {scaleLinear} from "d3-scale";
     import {onMount} from "svelte";
     import {page} from "$app/stores";
@@ -30,9 +33,21 @@
         }
     }
 
+    async function getC() {
+
+        const response = await fetch('/api/c', {
+            method: 'GET'
+        });
+        if (response.ok) {
+            return response.text()
+        }
+    }
+
+    let countriesElement = [];
+
     async function postV(event) {
         const data = new FormData(this);
-
+        data.append("countries", countriesElement)
         const response = await fetch('/api/v', {
             method: 'POST',
             body: data
@@ -53,6 +68,8 @@
     }
 
     let myGlobe;
+    let dbData;
+    let countries;
 
     onMount(async () => {
 
@@ -63,7 +80,7 @@
 
         myGlobe = Globe()
             //images/earth.jpg
-            .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+            .globeImageUrl(fast_earth)
             .hexBinPointLat(d => d.items_latitude)
             .hexBinPointLng(d => d.items_longitude)
             //.hexBinPointWeight(d => d.properties.mag)
@@ -71,20 +88,30 @@
             .hexTopColor(d => weightColor(d.sumWeight))
             .hexSideColor(d => weightColor(d.sumWeight))
             .hexLabel(d => `
-        <b>${d.points.slice().map(d=> d.items_location).at(0)}</b> ${d.points.length} events recorded<ul><li>
-          ${d.points.slice().sort((a, b) => b.items_year - a.items_vei).map(d => d.items_name + ' ' + d.items_year).join('</li><li>')}
+         ${d.points.length} events recorded<ul>
+        <b>${d.points.slice().map(d=> d.items_country).at(0)}</b>
+        <b>(${d.points.slice().map(d=> d.items_morphology).at(0)})</b><br>
+        <b>Elevation ${d.points.slice().map(d=> d.items_elevation).at(0)}</b>
+        <li>
+          ${d.points.slice().sort((a, b) => b.items_year - a.items_vei).map(d => 'Year: ' + d.items_year + ' | ' + 'VEI: ' + d.items_vei ).join('</li><li>')}
         </li></ul>
       `)
+                // This is very important.
+            (document.getElementById('globeViz'));
+
 
         //console.log(data.test.recordset)
 
-
-        myGlobe.hexBinPointsData(JSON.parse(await getV()));
-
+        dbData = JSON.parse(await getV())
+        countries = JSON.parse(await getC())
+        myGlobe.hexBinPointsData(dbData);
 
 
         //console.log(data.test.recordset[0].items_latitude)
-
+        console.log(dbData)
+        setTimeout(function() {
+            myGlobe.globeImageUrl(earth)
+        }, 1000)
 
     });
 
@@ -98,12 +125,14 @@
 </head>
 
 <body>
+
     <button on:click={() => openSearch()}
-            class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800"
-            type="button" data-drawer-target="drawer-example" data-drawer-show="drawer-example"
-            aria-controls="drawer-example">
-        Filters
+            class="relative inline-flex items-center justify-center mt-2 p-0.5 mb-2 mr-2 ml-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-cyan-500 to-blue-500 group-hover:from-cyan-500 group-hover:to-blue-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-cyan-200 dark:focus:ring-cyan-800">
+  <span class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
+      Filters
+  </span>
     </button>
+
 <!-- drawer component -->
 {#if searchBox}
 <form method="post" id="drawer-example" on:submit|preventDefault={postV}
@@ -126,9 +155,7 @@
 
     <div class="flex flex-col justify-between flex-1">
         <div class="space-y-6">
-            <!-- Categories -->
-
-            <!-- Prices -->
+            <!-- Year -->
             <div class="space-y-2">
                 <h6 class="text-base font-medium text-black dark:text-white">
                     Year
@@ -137,7 +164,7 @@
                     <div class="w-full">
 
 
-                        <input type="number" name="year-from" id="year-from" value="1000" min="1" max="2023"
+                        <input type="number" name="year-from" id="year-from" value="-1000" min="-1000" max="2023"
                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                placeholder="" required>
                     </div>
@@ -148,6 +175,38 @@
                         <input type="number" name="year-to" id="year-to" value="2023" min="1" max="2023"
                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                placeholder="" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <h6 class="text-base font-medium text-black dark:text-white">
+                    Country
+                </h6>
+                <div class="flex items-center justify-between col-span-2 space-x-3">
+                    <div class="w-full">
+
+
+                        <select multiple bind:value={countriesElement} id="country" name="country" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            <option selected>Choose a country</option>
+                            {#each countries as {items_country}}
+
+                            <option value="'{items_country}'">{items_country}</option>
+                            {/each}
+
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <h6 class="text-base font-medium text-black dark:text-white">
+                    VEI
+                </h6>
+                <div class="flex items-center justify-between col-span-2 space-x-3">
+                    <div class="w-full">
+                        <input id="vei" name="vei" type="range" min="0" max="5" value="1" step="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+
                     </div>
                 </div>
             </div>

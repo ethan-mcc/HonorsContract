@@ -1,6 +1,7 @@
 import {SECRET_DATABASE, SECRET_PASSWORD, SECRET_SERVER, SECRET_USER} from "$env/static/private";
 
 export const ssr = false;
+export const csr = true;
 
 import type { PageServerLoad } from './$types';
 
