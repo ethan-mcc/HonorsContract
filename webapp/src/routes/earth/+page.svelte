@@ -3,8 +3,6 @@
     import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from "flowbite-svelte";
 
 
-    import fast_earth from '$lib/assets/fast_earth.jpg'
-
 
     import {scaleLinear} from "d3-scale";
     import {onMount} from "svelte";
