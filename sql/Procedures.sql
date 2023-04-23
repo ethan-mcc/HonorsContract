@@ -68,6 +68,38 @@ SELECT DISTINCT items_country
 FROM dbo.volcanoes
 GO
 
+-- Get countries list.
+IF OBJECT_ID('ByCity') IS NOT NULL
+	DROP PROCEDURE ByCity
+GO
+
+-- ByCity (Route /bc, GET)
+CREATE PROCEDURE ByCity 
+@city varchar(50)
+AS
+SELECT 
+-- Select everything (this is faster than *)
+[items_year],[items_month],[items_day],[items_tsunamiEventId],
+[items_earthquakeEventId],[items_volcanoLocationId],
+[items_volcanoLocationNewNum],[items_volcanoLocationNum],[items_name],
+[items_location],[items_country],[items_latitude],[items_longitude],
+[items_elevation],[items_morphology],[items_vei],[items_agent],
+[items_deathsTotal],[items_deathsAmountOrderTotal],
+[items_damageAmountOrderTotal],[items_housesDestroyedTotal],
+[items_housesDestroyedAmountOrderTotal],[items_significant],
+[items_publish],[items_status],[items_timeErupt],
+[items_deathsAmountOrder],[items_injuriesTotal],
+[items_injuriesAmountOrderTotal],[items_damageAmountOrder],
+[items_deaths],[items_housesDestroyedAmountOrder],
+[items_injuries],[items_injuriesAmountOrder],[items_damageMillionsDollars],
+[items_housesDestroyed],[items_damageMillionsDollarsTotal],
+[items_missing],[items_missingAmountOrder],[items_missingTotal],
+[items_missingAmountOrderTotal]
+FROM dbo.volcanoes
+-- By the city
+WHERE items_name = @city
+GO
+
 
 
 
