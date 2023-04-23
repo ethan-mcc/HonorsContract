@@ -4,13 +4,17 @@
 
 
     import fast_earth from '$lib/assets/fast_earth.jpg'
-    import earth from '$lib/assets/earth.jpg'
+
 
     import {scaleLinear} from "d3-scale";
     import {onMount} from "svelte";
     import {page} from "$app/stores";
     import * as d3 from "d3-scale";
     import {goto} from "$app/navigation";
+    import { fade, slide } from 'svelte/transition';
+    import {TextureLoader} from "three";
+    import * as THREE from "three";
+
 
     let searchBox;
     let showTable;
@@ -29,7 +33,7 @@
 
     async function getV() {
 
-        const response = await fetch('/api/v', {
+        const response = await fetch('/api/v/?t=', {
             method: 'GET'
         });
         if (response.ok) {
@@ -39,7 +43,7 @@
 
     async function getC() {
 
-        const response = await fetch('/api/c', {
+        const response = await fetch('/api/c/?t=', {
             method: 'GET'
         });
         if (response.ok) {
@@ -49,7 +53,7 @@
 
     let countriesElement = [];
 
-    async function postV(event) {
+    async function postV() {
         const data = new FormData(this);
         data.append("countries", countriesElement)
         const response = await fetch('/api/v', {
@@ -71,6 +75,18 @@
         myGlobe.hexBinPointsData(data);
     }
 
+    let loaded = false;
+    let finished = false;
+    async function changeImage(data) {
+        if (!loaded && data.altitude < 1.25){
+            loaded = true
+            myGlobe.globeImageUrl("/images/earth-min.jpg")
+        }
+        else if (data.altitude < 1.19) {
+            finished = true;
+        }
+    }
+
     let myGlobe;
     let dbData;
     let countries;
@@ -78,17 +94,20 @@
     function clickedHex(data) {
         goto("earth/" + data.points[0].items_name)
     }
-
     onMount(async () => {
+        countries = JSON.parse(await getC())
 
         const weightColor = d3.scaleLinear()
             .domain([0, 30])
             .range(['lightblue', 'darkred'])
             .clamp(true);
 
-        myGlobe = Globe()
+        myGlobe = Globe({animateIn: false})
             //images/earth.jpg
-            .globeImageUrl(fast_earth)
+
+            .globeImageUrl("/images/fast_earth.jpg")
+            .backgroundImageUrl("/images/galaxy_starfield.png")
+            .bumpImageUrl('/images/earth-topology.png')
             .hexBinPointLat(d => d.items_latitude)
             .hexBinPointLng(d => d.items_longitude)
             //.hexBinPointWeight(d => d.properties.mag)
@@ -97,7 +116,9 @@
             .hexSideColor(d => weightColor(d.sumWeight))
             .hexTransitionDuration(100)
             .onHexClick(clickedHex)
-            .hexLabel(d=> `
+            .onZoom(changeImage)
+            .hexBinPointsData(JSON.parse(await getV()))
+            .hexLabel(d=> `<a href={"earth/" + data.points[0].items_name}>
     <div class="relative w-full max-w-md max-h-full">
         <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
             <div class="p-2 text-black dark:text-white">
@@ -110,24 +131,29 @@
         </ul>
         </div>
     </div>
-</div>`)
+</div></a>`)
                 // This is very important.
             (document.getElementById('globeViz'));
 
+        const CLOUDS_IMG_URL = '/images/clouds.png';
+        const CLOUDS_ALT = 0.004;
+        const CLOUDS_ROTATION_SPEED = -0.003; // deg/frame
 
-        //console.log(data.about.recordset)
+        new TextureLoader().load(CLOUDS_IMG_URL, cloudsTexture => {
+            const clouds = new THREE.Mesh(
+                new THREE.SphereGeometry(myGlobe.getGlobeRadius() * (1 + CLOUDS_ALT), 75, 75),
+                new THREE.MeshPhongMaterial({map: cloudsTexture, transparent: true})
+            );
+            myGlobe.scene().add(clouds);
 
-        dbData = JSON.parse(await getV())
-        countries = JSON.parse(await getC())
-        myGlobe.hexBinPointsData(dbData);
+            (function rotateClouds() {
+                clouds.rotation.y += CLOUDS_ROTATION_SPEED * Math.PI / 180;
+                requestAnimationFrame(rotateClouds);
+            })();
+        });
 
-
-        //console.log(data.about.recordset[0].items_latitude)
-        console.log(dbData)
-        setTimeout(function() {
-            myGlobe.globeImageUrl(earth)
-        }, 1000)
-
+        //dbData = JSON.parse(await getV())
+        //await changeImage()
     });
 
 
@@ -139,7 +165,7 @@
     <!--<script src="../../dist/globe.gl.js"></script>-->
 </head>
 
-<body>
+<body data-sveltekit-preload-data="hover">
 
     <button on:click={() => openSearch()}
             class="relative inline-flex items-center justify-center mt-2 p-0.5 mb-2 mr-2 ml-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-cyan-500 to-blue-500 group-hover:from-cyan-500 group-hover:to-blue-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-cyan-200 dark:focus:ring-cyan-800">
@@ -147,10 +173,10 @@
       Filters
   </span>
     </button>
-
+    <h1 class="inline-flex {loaded && !finished ? '' : 'hidden'}" transition:fade={{duration: 100}}>Loading High-Res Globe...</h1>
 <!-- drawer component -->
 {#if searchBox}
-<form method="post" id="drawer-example" on:submit|preventDefault={postV}
+<form method="post" id="drawer-example" on:submit|preventDefault={postV} transition:slide
       class="fixed top-0 left-0 w-full h-screen max-w-xs p-4 overflow-y-auto transition-transform z-10 bg-white dark:bg-gray-800"
       tabindex="-1" aria-labelledby="drawer-label">
     <h5 id="drawer-label"
@@ -239,5 +265,6 @@
 {/if}
 
 
-<div id="globeViz"></div>
+<div id="globeViz">
+</div>
 </body>

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { locale } from '$i18n/i18n-svelte';
 	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
+	import {goto} from "$app/navigation";
+	import {page} from "$app/stores";
 </script>
 
 <header>
@@ -13,10 +15,19 @@
 			<div class="hidden w-full md:block md:w-auto" id="navbar-default">
 				<ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
 					<li>
-						<a href="/{$locale}" class="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">Home</a>
+						<a href="/" class="block py-2 pl-3 pr-4 text-white {$page.url.pathname == '/' ? 'md:dark:text-blue-500' : ''} rounded md:bg-transparent  md:p-0 dark:text-white " >Home</a>
 					</li>
 					<li>
-						<a href="/about" class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">About</a>
+						<a href="/earth" class="block py-2 pl-3 pr-4 text-gray-900 rounded {$page.url.pathname == '/earth' ? 'md:dark:text-blue-500' : ''} hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Viewer</a>
+					</li>
+					<li>
+						<a href="/learn" class="block py-2 pl-3 pr-4 text-gray-900 {$page.url.pathname == '/learn' ? 'md:dark:text-blue-500' : ''} rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Learn</a>
+					</li>
+					<li>
+						<a href="/howto" class="block py-2 pl-3 pr-4 text-gray-900 {$page.url.pathname == '/howto' ? 'md:dark:text-blue-500' : ''} rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">How To</a>
+					</li>
+					<li>
+						<a href="/about" class="block py-2 pl-3 pr-4 text-gray-900 {$page.url.pathname == '/about' ? 'md:dark:text-blue-500' : ''} rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">About</a>
 					</li>
 
 				</ul>

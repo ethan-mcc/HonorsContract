@@ -1,11 +1,11 @@
 import type {RequestHandler} from "@sveltejs/kit";
 import sql from "mssql";
 
-export const GET: RequestHandler = async (event) => {
+export const GET: RequestHandler = async (query) => {
 
-    const query = `USE master
+    const SQLquery = `USE master
         EXEC dbo.Countries`
-    const result = await sql.query(query)
+    const result = await sql.query(SQLquery)
 
     return new Response(JSON.stringify(result.recordset))
 }

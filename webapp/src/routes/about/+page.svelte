@@ -1,8 +1,5 @@
 <script>
   import {page} from "$app/stores";
-
-  export let data = $page.data.post
-  console.log(data.test.recordsets)
 </script>
 <body>
 <!-- drawer init and toggle -->

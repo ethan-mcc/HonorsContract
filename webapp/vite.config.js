@@ -18,6 +18,9 @@ const config = {
 			}
 		})
 	],
+	ssr: {
+		noExternal: ['three'],
+	},
 	test: {
 		include: ['src/**/*.{about,spec}.{js,ts}']
 	}

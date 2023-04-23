@@ -7,7 +7,6 @@
 	import type { LayoutData } from './$types';
 	import SvelteTheme from '$lib/components/SvelteThemes/SvelteTheme.svelte';
 	export let data: LayoutData;
-	setLocale(data.locale);
 	console.info($LL.log({ fileName: '+layout.svelte' }));
 </script>
 

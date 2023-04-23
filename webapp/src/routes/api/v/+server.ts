@@ -1,16 +1,16 @@
 import type { json, RequestHandler } from '@sveltejs/kit'
 import {connectToDB} from "../../../lib/utils/db";
-import sql from "mssql";
+import sql, {columns} from "mssql";
 
 
 // Custom API EndPoint
-export const GET: RequestHandler = async (event) => {
+export const GET: RequestHandler = async (query) => {
 
     // Using a stored procedure decreased average latency by ~5-25ms.
-    const query = `USE master
+    const SQLquery = `USE master
                    EXEC dbo.BaseVolcanoes`
 
-    const result = await sql.query(query)
+    const result = await sql.query(SQLquery)
 
     return new Response(JSON.stringify(result.recordset))
 }

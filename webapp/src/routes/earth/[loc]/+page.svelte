@@ -3,6 +3,8 @@
     import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from "flowbite-svelte";
     import {page} from "$app/stores";
     import {onMount} from "svelte";
+    import { fade, fly } from 'svelte/transition';
+
 
     async function getBC() {
 
@@ -31,13 +33,18 @@
     <!--<script src="../../dist/globe.gl.js"></script>-->
 </head>
 
-<body>
+<body data-sveltekit-preload-data="hover">
+<button on:click={() => history.back()}
+        class="relative inline-flex items-center justify-center mt-2 p-0.5 mb-2 mr-2 ml-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-cyan-500 to-blue-500 group-hover:from-cyan-500 group-hover:to-blue-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-cyan-200 dark:focus:ring-cyan-800">
+  <span class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
+      Back
+  </span>
+</button>
 <div class="container mx-auto w-full">
+    <h1 class="mx-auto text-center text-2xl p-5">{$page.params.loc}</h1>
 <Table shadow hoverable>
     <TableHead>
-        <TableHeadCell>Year</TableHeadCell>
-        <TableHeadCell>Month</TableHeadCell>
-        <TableHeadCell>Count</TableHeadCell>
+        <TableHeadCell>Date</TableHeadCell>
         <TableHeadCell>Name</TableHeadCell>
         <TableHeadCell>Country</TableHeadCell>
         <TableHeadCell>Latitude</TableHeadCell>
@@ -50,28 +57,18 @@
         <TableHeadCell>Injuries</TableHeadCell>
         <TableHeadCell>Damage ($ mil)</TableHeadCell>
     </TableHead>
-    <TableBody class="divide-y">
+    <TableBody class="divide-y" >
         {#if table !== undefined}
-        {#each table as {items_year,items_month,items_day,items_tsunamiEventId,
-            items_earthquakeEventId,items_volcanoLocationId,
-            items_volcanoLocationNewNum,items_volcanoLocationNum,items_name,
-            items_location,items_country,items_latitude,items_longitude,
-            items_elevation,items_morphology,items_vei,items_agent,
-            items_deathsTotal,items_deathsAmountOrderTotal,
-            items_damageAmountOrderTotal,items_housesDestroyedTotal,
-            items_housesDestroyedAmountOrderTotal,items_significant,
-            items_publish,items_status,items_timeErupt,
-            items_deathsAmountOrder,items_injuriesTotal,
-            items_injuriesAmountOrderTotal,items_damageAmountOrder,
-            items_deaths,items_housesDestroyedAmountOrder,
-            items_injuries,items_injuriesAmountOrder,items_damageMillionsDollars,
-            items_housesDestroyed,items_damageMillionsDollarsTotal,
-            items_missing,items_missingAmountOrder,items_missingTotal,
-            items_missingAmountOrderTotal}}
+        {#each table as {BC, dateEvent, items_name,items_country,
+            items_latitude,items_longitude,items_elevation,items_morphology,
+            items_vei,items_agent,items_deathsTotal,items_injuriesTotal,
+            items_damageMillionsDollarsTotal}}
         <TableBodyRow  class="cursor-pointer">
-            <TableBodyCell>{items_year}</TableBodyCell>
-            <TableBodyCell>{items_month}</TableBodyCell>
-            <TableBodyCell>{items_day}</TableBodyCell>
+            {#if BC === 0}
+            <TableBodyCell>{new Date (dateEvent).toLocaleDateString()}</TableBodyCell>
+            {:else }
+                <TableBodyCell>{new Date (dateEvent).toLocaleDateString()} BC</TableBodyCell>
+            {/if}
             <TableBodyCell>{items_name}</TableBodyCell>
             <TableBodyCell>{items_country}</TableBodyCell>
             <TableBodyCell>{items_latitude}</TableBodyCell>
