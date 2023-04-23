@@ -87,7 +87,25 @@
             .hexAltitude(({ sumWeight }) => sumWeight * 0.005)
             .hexTopColor(d => weightColor(d.sumWeight))
             .hexSideColor(d => weightColor(d.sumWeight))
-            .hexLabel(d => `
+            .hexLabel(d=> `
+    <div class="relative w-full max-w-md max-h-full">
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <div class="p-2 text-black dark:text-white">
+        <ul>
+            <b>${d.points.slice().map(d=> d.items_country).at(0)} - ${d.points.slice().map(d=> d.items_name).at(0)}</b><br>
+            <b>Elevation: ${d.points.slice().map(d=> d.items_elevation).at(0)}m</b><br>
+            <b>(${d.points.slice().map(d=> d.items_morphology).at(0)})</b><br>
+            <b>(${d.points.slice().map(d=> d.items_latitude).at(0)}, ${d.points.slice().map(d=> d.items_longitude).at(0)})</b><br>
+            <li>${d.points.length} events recorded</li>
+
+            <li>
+                ${d.points.slice().sort((a, b) => b.items_year - a.items_vei).map(d => 'Year: ' + d.items_year + ' | ' + 'VEI: ' + d.items_vei ).join('</li><li>')}
+            </li>
+        </ul>
+        </div>
+    </div>
+</div>`)
+            /*.hexLabel(d => `
          ${d.points.length} events recorded<ul>
         <b>${d.points.slice().map(d=> d.items_country).at(0)}</b>
         <b>(${d.points.slice().map(d=> d.items_morphology).at(0)})</b><br>
@@ -95,19 +113,19 @@
         <li>
           ${d.points.slice().sort((a, b) => b.items_year - a.items_vei).map(d => 'Year: ' + d.items_year + ' | ' + 'VEI: ' + d.items_vei ).join('</li><li>')}
         </li></ul>
-      `)
+      `)*/
                 // This is very important.
             (document.getElementById('globeViz'));
 
 
-        //console.log(data.test.recordset)
+        //console.log(data.about.recordset)
 
         dbData = JSON.parse(await getV())
         countries = JSON.parse(await getC())
         myGlobe.hexBinPointsData(dbData);
 
 
-        //console.log(data.test.recordset[0].items_latitude)
+        //console.log(data.about.recordset[0].items_latitude)
         console.log(dbData)
         setTimeout(function() {
             myGlobe.globeImageUrl(earth)
@@ -185,15 +203,11 @@
                 </h6>
                 <div class="flex items-center justify-between col-span-2 space-x-3">
                     <div class="w-full">
-
-
-                        <select multiple bind:value={countriesElement} id="country" name="country" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <select multiple bind:value={countriesElement} id="country" name="country" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required>
                             <option selected>Choose a country</option>
                             {#each countries as {items_country}}
-
-                            <option value="'{items_country}'">{items_country}</option>
+                            <option value="{items_country}">{items_country}</option>
                             {/each}
-
                         </select>
                     </div>
                 </div>

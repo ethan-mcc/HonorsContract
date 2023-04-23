@@ -19,7 +19,7 @@ const config = {
 		})
 	],
 	test: {
-		include: ['src/**/*.{test,spec}.{js,ts}']
+		include: ['src/**/*.{about,spec}.{js,ts}']
 	}
 };
 
