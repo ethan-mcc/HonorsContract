@@ -1,5 +1,7 @@
 <script>
     import Globe from 'globe.gl';
+    import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from "flowbite-svelte";
+
 
     import fast_earth from '$lib/assets/fast_earth.jpg'
     import earth from '$lib/assets/earth.jpg'
@@ -8,8 +10,10 @@
     import {onMount} from "svelte";
     import {page} from "$app/stores";
     import * as d3 from "d3-scale";
+    import {goto} from "$app/navigation";
 
     let searchBox;
+    let showTable;
 
     function openSearch() {
         searchBox = true;
@@ -71,6 +75,10 @@
     let dbData;
     let countries;
 
+    function clickedHex(data) {
+        goto("earth/" + data.points[0].items_name)
+    }
+
     onMount(async () => {
 
         const weightColor = d3.scaleLinear()
@@ -84,9 +92,11 @@
             .hexBinPointLat(d => d.items_latitude)
             .hexBinPointLng(d => d.items_longitude)
             //.hexBinPointWeight(d => d.properties.mag)
-            .hexAltitude(({ sumWeight }) => sumWeight * 0.005)
+            .hexAltitude(({ sumWeight }) => sumWeight * 0.009)
             .hexTopColor(d => weightColor(d.sumWeight))
             .hexSideColor(d => weightColor(d.sumWeight))
+            .hexTransitionDuration(100)
+            .onHexClick(clickedHex)
             .hexLabel(d=> `
     <div class="relative w-full max-w-md max-h-full">
         <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
@@ -97,23 +107,10 @@
             <b>(${d.points.slice().map(d=> d.items_morphology).at(0)})</b><br>
             <b>(${d.points.slice().map(d=> d.items_latitude).at(0)}, ${d.points.slice().map(d=> d.items_longitude).at(0)})</b><br>
             <li>${d.points.length} events recorded</li>
-
-            <li>
-                ${d.points.slice().sort((a, b) => b.items_year - a.items_vei).map(d => 'Year: ' + d.items_year + ' | ' + 'VEI: ' + d.items_vei ).join('</li><li>')}
-            </li>
         </ul>
         </div>
     </div>
 </div>`)
-            /*.hexLabel(d => `
-         ${d.points.length} events recorded<ul>
-        <b>${d.points.slice().map(d=> d.items_country).at(0)}</b>
-        <b>(${d.points.slice().map(d=> d.items_morphology).at(0)})</b><br>
-        <b>Elevation ${d.points.slice().map(d=> d.items_elevation).at(0)}</b>
-        <li>
-          ${d.points.slice().sort((a, b) => b.items_year - a.items_vei).map(d => 'Year: ' + d.items_year + ' | ' + 'VEI: ' + d.items_vei ).join('</li><li>')}
-        </li></ul>
-      `)*/
                 // This is very important.
             (document.getElementById('globeViz'));
 
@@ -240,6 +237,7 @@
     </div>
 </form>
 {/if}
+
 
 <div id="globeViz"></div>
 </body>
